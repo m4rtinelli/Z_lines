@@ -13,8 +13,10 @@ function validatePreset(input){
  if(!Number.isInteger(result.density)||!Number.isInteger(result.seed)||!Object.hasOwn(palettes,result.color)||!['progressive','alternating','pulse','organic'].includes(result.weight))throw Error('The preset contains invalid settings.');
  for(const key of ['canvasColor','inkColor'])if(s[key]!==undefined){if(typeof s[key]!=='string'||!/^#[\da-f]{6}$/i.test(s[key]))throw Error('The preset contains an invalid color.');result[key]=s[key]}
  for(const mode of modes){if(s.details?.[mode]){result.details[mode]={};for(const [key,,min,max] of modeControls[mode])if(s.details[mode][key]!==undefined)result.details[mode][key]=number(s.details[mode][key],min,max)}}
- const motion=input.motion;if(!motion||typeof motion.enabled!=='boolean'||!['breathe','ripple','cascade'].includes(motion.preset))throw Error('The preset contains invalid motion settings.');
- return {state:result,motion:{enabled:motion.enabled,preset:motion.preset,phase:number(motion.phase??0,0,1e9)},name:typeof input.name==='string'?input.name.slice(0,80):'Imported study'};
+ if(s.motionColors!==undefined){if(!Array.isArray(s.motionColors)||s.motionColors.length!==4||!s.motionColors.every(c=>typeof c==='string'&&/^#[\da-f]{6}$/i.test(c)))throw Error('The motion palette must contain four valid colors.');result.motionColors=[...s.motionColors]}
+ if(s.colorSpeed!==undefined)result.colorSpeed=number(s.colorSpeed,.1,3);
+ const motion=input.motion;if(!motion||typeof motion.enabled!=='boolean'||!['color','breathe','ripple','cascade'].includes(motion.preset))throw Error('The preset contains invalid motion settings.');
+ return {state:result,motion:{enabled:motion.enabled,preset:motion.preset==='breathe'?'color':motion.preset,phase:number(motion.phase??0,0,1e9)},name:typeof input.name==='string'?input.name.slice(0,80):'Imported study'};
 }
 
 let controlsMode='';
